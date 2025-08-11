@@ -1,0 +1,28 @@
+{
+	"name": "email-to-carins-dereg",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"deployTail": "wrangler deploy && wrangler tail",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"test": "vitest",
+		"test:coverage": "vitest run --coverage --no-file-parallelism",
+		"test:quiet": "vitest run --reporter=dot",
+		"test:clean": "node test-clean.js",
+		"types": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.8.19",
+		"@types/node": "^24.2.1",
+		"@vitest/coverage-istanbul": "^3.2.4",
+		"typescript": "^5.5.2",
+		"vitest": "~3.2.0",
+		"wrangler": "^4.26.1"
+	},
+	"dependencies": {
+		"@google/generative-ai": "^0.24.1",
+		"postal-mime": "^2.4.4"
+	}
+}
