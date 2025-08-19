@@ -2,7 +2,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { 
 	arrayBufferToBase64, 
 	base64ToArrayBuffer, 
-	streamToArrayBuffer 
+	streamToArrayBuffer,
+	processAttachments,
+	uploadFileWithUuid,
+	postGeminiResult
 } from '../src/index';
 
 describe('Unit Tests', () => {
@@ -115,6 +118,67 @@ describe('Unit Tests', () => {
 
 			const result = await streamToArrayBuffer(stream, 5);
 			expect(result).toEqual(data);
+		});
+	});
+
+	describe('CF Access Authentication Warnings', () => {
+		it('logs warning when CF_ACCESS_CLIENT_ID is missing in processAttachments', async () => {
+			const mockEnv = {
+				CF_POSTURL: 'http://example.com',
+				CF_ACCESS_CLIENT_SECRET: 'secret',
+				CF_ACCESS_CLIENT_ID: undefined
+			};
+			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			global.fetch = vi.fn().mockResolvedValue(new Response());
+
+			const attachments = [{
+				filename: 'test.pdf',
+				disposition: 'attachment',
+				mimeType: 'application/pdf',
+				content: new ArrayBuffer(10)
+			}];
+
+			await processAttachments(attachments, mockEnv as any, 'test-id');
+			
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'CF_ACCESS_CLIENT_ID or CF_ACCESS_CLIENT_SECRET is not set. Request may fail if endpoint is protected by Cloudflare Access.'
+			);
+			consoleWarnSpy.mockRestore();
+		});
+
+		it('logs warning when CF_ACCESS_CLIENT_SECRET is missing in uploadFileWithUuid', async () => {
+			const mockEnv = {
+				CF_POSTURL: 'http://example.com',
+				CF_ACCESS_CLIENT_ID: 'client-id',
+				CF_ACCESS_CLIENT_SECRET: undefined
+			};
+			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			global.fetch = vi.fn().mockResolvedValue(new Response('', { status: 200 }));
+
+			await uploadFileWithUuid(mockEnv as any, new ArrayBuffer(10), 'test.pdf', 'application/pdf', '123');
+			
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'uploadFileWithUuid: CF_ACCESS_CLIENT_ID or CF_ACCESS_CLIENT_SECRET is not set for file test.pdf. Request may fail if endpoint is protected by Cloudflare Access.'
+			);
+			consoleWarnSpy.mockRestore();
+		});
+
+		it('logs warning when both CF credentials are missing in postGeminiResult', async () => {
+			const mockEnv = {
+				CF_POSTURL: 'http://example.com',
+				CF_ACCESS_CLIENT_ID: undefined,
+				CF_ACCESS_CLIENT_SECRET: undefined
+			};
+			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			global.fetch = vi.fn().mockResolvedValue(new Response('', { status: 200 }));
+
+			const resultText = JSON.stringify({ CarId: '12345' });
+			await postGeminiResult(mockEnv as any, resultText, '123');
+			
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'postGeminiResult: CF_ACCESS_CLIENT_ID or CF_ACCESS_CLIENT_SECRET is not set. Request may fail if endpoint is protected by Cloudflare Access.'
+			);
+			consoleWarnSpy.mockRestore();
 		});
 	});
 });
