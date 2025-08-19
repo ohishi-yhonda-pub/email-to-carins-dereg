@@ -71,12 +71,12 @@ export const processAttachments = async (attachments: any[], env: Env, messageId
 		var formData = new FormData();
 		const file = new File([att.content], att.filename, { type: att.mimeType });
 		formData.append('file', file);
-		
+
 		// CF Access認証情報のチェック
 		if (!env.CF_ACCESS_CLIENT_ID || !env.CF_ACCESS_CLIENT_SECRET) {
 			console.warn('CF_ACCESS_CLIENT_ID or CF_ACCESS_CLIENT_SECRET is not set. Request may fail if endpoint is protected by Cloudflare Access.');
 		}
-		
+
 		await fetch(env.CF_POSTURL, {
 			method: 'POST',
 			body: formData,
@@ -184,10 +184,10 @@ export const streamToArrayBuffer = async (stream: ReadableStream<Uint8Array>, st
 export const processWithGemini = async (env: Env, attachment: { content: ArrayBuffer; filename: string; mimeType: string }): Promise<void> => {
 	const generativModel = new GoogleGenerativeAI(env.GOOGLE_GEMINI_API_KEY);
 	const genModel = await generativModel.getGenerativeModel(
-		{ model: env.MODEL }, 
+		{ model: env.MODEL },
 		{ baseUrl: `https://gateway.ai.cloudflare.com/v1/${env.CF_ACCOUNT_ID}/${env.GATEWAY_NAME}/google-ai-studio` }
 	);
-	
+
 	console.log("Generation config");
 	const payload = {
 		contents: [{
@@ -222,15 +222,15 @@ export const processWithGemini = async (env: Env, attachment: { content: ArrayBu
 			}
 		} as GenerationConfig
 	};
-	
+
 	console.log(`Sending payload to Gemini API`, JSON.stringify(payload));
 	console.log("Parts to generate content");
-	
-	const generatedContent = await genModel.generateContent({ 
-		contents: payload.contents, 
-		generationConfig: payload.generationConfig as GenerationConfig 
+
+	const generatedContent = await genModel.generateContent({
+		contents: payload.contents,
+		generationConfig: payload.generationConfig as GenerationConfig
 	});
-	
+
 	const resultText = generatedContent?.response?.candidates?.[0]?.content?.parts?.[0]?.text;
 	if (resultText) {
 		const uuid = crypto.randomUUID();
@@ -245,12 +245,12 @@ export const uploadFileWithUuid = async (env: Env, fileContent: ArrayBuffer, fil
 	const multiform = new FormData();
 	multiform.append("uuid", uuid);
 	multiform.append("file", new File([new Uint8Array(fileContent)], filename, { type: mimeType }));
-	
+
 	// CF Access認証情報のチェック
 	if (!env.CF_ACCESS_CLIENT_ID || !env.CF_ACCESS_CLIENT_SECRET) {
 		console.warn(`uploadFileWithUuid: CF_ACCESS_CLIENT_ID or CF_ACCESS_CLIENT_SECRET is not set for file ${filename}. Request may fail if endpoint is protected by Cloudflare Access.`);
 	}
-	
+
 	const response = await fetch(env.CF_POSTURL, {
 		method: 'POST',
 		body: multiform,
@@ -272,8 +272,8 @@ export const postGeminiResult = async (env: Env, resultText: string, uuid: strin
 	if (!env.CF_ACCESS_CLIENT_ID || !env.CF_ACCESS_CLIENT_SECRET) {
 		console.warn('postGeminiResult: CF_ACCESS_CLIENT_ID or CF_ACCESS_CLIENT_SECRET is not set. Request may fail if endpoint is protected by Cloudflare Access.');
 	}
-	
-	const postRes = await fetch(env.CF_POSTURL, {
+
+	const postRes = await fetch(env.CF_POST_DATA_URL, {
 		method: 'POST',
 		body: JSON.stringify({ ...JSON.parse(resultText), type: "ValidPeriodExpirdateE", fileUuid: uuid }),
 		headers: {
