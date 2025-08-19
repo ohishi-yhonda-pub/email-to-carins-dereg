@@ -165,7 +165,7 @@ describe('Unit Tests', () => {
 
 		it('logs warning when both CF credentials are missing in postGeminiResult', async () => {
 			const mockEnv = {
-				CF_POSTURL: 'http://example.com',
+				CF_POST_DATA_URL: 'http://example.com/data',
 				CF_ACCESS_CLIENT_ID: undefined,
 				CF_ACCESS_CLIENT_SECRET: undefined
 			};
