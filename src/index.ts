@@ -71,6 +71,12 @@ export const processAttachments = async (attachments: any[], env: Env, messageId
 		var formData = new FormData();
 		const file = new File([att.content], att.filename, { type: att.mimeType });
 		formData.append('file', file);
+		
+		// CF Access認証情報のチェック
+		if (!env.CF_ACCESS_CLIENT_ID || !env.CF_ACCESS_CLIENT_SECRET) {
+			console.warn('CF_ACCESS_CLIENT_ID or CF_ACCESS_CLIENT_SECRET is not set. Request may fail if endpoint is protected by Cloudflare Access.');
+		}
+		
 		await fetch(env.CF_POSTURL, {
 			method: 'POST',
 			body: formData,
@@ -239,6 +245,12 @@ export const uploadFileWithUuid = async (env: Env, fileContent: ArrayBuffer, fil
 	const multiform = new FormData();
 	multiform.append("uuid", uuid);
 	multiform.append("file", new File([new Uint8Array(fileContent)], filename, { type: mimeType }));
+	
+	// CF Access認証情報のチェック
+	if (!env.CF_ACCESS_CLIENT_ID || !env.CF_ACCESS_CLIENT_SECRET) {
+		console.warn(`uploadFileWithUuid: CF_ACCESS_CLIENT_ID or CF_ACCESS_CLIENT_SECRET is not set for file ${filename}. Request may fail if endpoint is protected by Cloudflare Access.`);
+	}
+	
 	const response = await fetch(env.CF_POSTURL, {
 		method: 'POST',
 		body: multiform,
@@ -256,6 +268,11 @@ export const uploadFileWithUuid = async (env: Env, fileContent: ArrayBuffer, fil
 
 // Gemini の結果を POST するヘルパー関数
 export const postGeminiResult = async (env: Env, resultText: string, uuid: string): Promise<void> => {
+	// CF Access認証情報のチェック
+	if (!env.CF_ACCESS_CLIENT_ID || !env.CF_ACCESS_CLIENT_SECRET) {
+		console.warn('postGeminiResult: CF_ACCESS_CLIENT_ID or CF_ACCESS_CLIENT_SECRET is not set. Request may fail if endpoint is protected by Cloudflare Access.');
+	}
+	
 	const postRes = await fetch(env.CF_POSTURL, {
 		method: 'POST',
 		body: JSON.stringify({ ...JSON.parse(resultText), type: "ValidPeriodExpirdateE", fileUuid: uuid }),
