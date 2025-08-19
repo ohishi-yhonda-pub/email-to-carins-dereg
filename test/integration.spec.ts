@@ -53,6 +53,7 @@ describe('Integration Tests', () => {
 				CF_ACCOUNT_ID: 'test-account',
 				GATEWAY_NAME: 'test-gateway',
 				CF_POSTURL: 'https://example.com/api',
+				CF_POST_DATA_URL: 'https://example.com/data',
 				CF_ACCESS_CLIENT_ID: 'test-client-id',
 				CF_ACCESS_CLIENT_SECRET: 'test-client-secret'
 			} as Env;
@@ -108,7 +109,7 @@ describe('Integration Tests', () => {
 			
 			// 2回目の呼び出し（postGeminiResult）
 			const secondCall = (globalThis.fetch as any).mock.calls[1];
-			expect(secondCall[0]).toBe(mockEnv.CF_POSTURL);
+			expect(secondCall[0]).toBe(mockEnv.CF_POST_DATA_URL);
 			expect(secondCall[1].headers['Content-Type']).toBe('application/json');
 		});
 
@@ -119,6 +120,7 @@ describe('Integration Tests', () => {
 				CF_ACCOUNT_ID: 'test-account',
 				GATEWAY_NAME: 'test-gateway',
 				CF_POSTURL: 'https://example.com/api',
+				CF_POST_DATA_URL: 'https://example.com/data',
 				CF_ACCESS_CLIENT_ID: 'test-client-id',
 				CF_ACCESS_CLIENT_SECRET: 'test-client-secret'
 			} as Env;
@@ -173,6 +175,7 @@ describe('Integration Tests', () => {
 				CF_ACCOUNT_ID: 'test-account',
 				GATEWAY_NAME: 'test-gateway',
 				CF_POSTURL: 'https://example.com/api',
+				CF_POST_DATA_URL: 'https://example.com/data',
 				CF_ACCESS_CLIENT_ID: 'test-client-id',
 				CF_ACCESS_CLIENT_SECRET: 'test-client-secret'
 			} as Env;
@@ -216,7 +219,7 @@ describe('Integration Tests', () => {
 	describe('postGeminiResult', () => {
 		it('posts result successfully', async () => {
 			const mockEnv = {
-				CF_POSTURL: 'https://example.com/api',
+				CF_POST_DATA_URL: 'https://example.com/data',
 				CF_ACCESS_CLIENT_ID: 'test-client-id',
 				CF_ACCESS_CLIENT_SECRET: 'test-client-secret'
 			} as Env;
@@ -240,7 +243,7 @@ describe('Integration Tests', () => {
 			await postGeminiResult(mockEnv, resultText, 'test-uuid');
 			
 			expect(globalThis.fetch).toHaveBeenCalledWith(
-				mockEnv.CF_POSTURL,
+				mockEnv.CF_POST_DATA_URL,
 				expect.objectContaining({
 					method: 'POST',
 					headers: {
@@ -255,7 +258,7 @@ describe('Integration Tests', () => {
 
 		it('throws error on 401 Unauthorized', async () => {
 			const mockEnv = {
-				CF_POSTURL: 'https://example.com/api',
+				CF_POST_DATA_URL: 'https://example.com/data',
 				CF_ACCESS_CLIENT_ID: 'test-client-id',
 				CF_ACCESS_CLIENT_SECRET: 'test-client-secret'
 			} as Env;
@@ -273,7 +276,7 @@ describe('Integration Tests', () => {
 
 		it('throws error on network failure', async () => {
 			const mockEnv = {
-				CF_POSTURL: 'https://example.com/api',
+				CF_POST_DATA_URL: 'https://example.com/data',
 				CF_ACCESS_CLIENT_ID: 'test-client-id',
 				CF_ACCESS_CLIENT_SECRET: 'test-client-secret'
 			} as Env;
